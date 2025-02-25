@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retirement Savings Calculator</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --background: #f4f7fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            width: 80px;
+            height: auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        .intro-text {
+            max-width: 800px;
+            margin: 0 auto 40px;
+            text-align: center;
+            color: #666;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .input-section, .graph-section {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease;
+        }
+
+        .input-section:hover, .graph-section:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .input-group {
+            position: relative;
+            margin: 15px 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 300px !important;
+        }
+
+        .results-text {
+            margin-top: 25px;
+        }
+
+        .result-message {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #eef2f7;
+            border-radius: 8px;
+        }
+
+        .learn-more h3, .related-topics h3 {
+            color: var(--secondary);
+            margin: 25px 0 15px;
+            font-size: 18px;
+        }
+
+        .report-list p {
+            margin: 8px 0;
+            padding-left: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .report-list p:hover {
+            color: var(--secondary);
+        }
+
+        .report-list p:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+        }
+
+        .disclaimer {
+            font-size: 14px;
+            font-weight: 600;
+            color: #777;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .download-button {
+            background: var(--secondary);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .download-button:hover {
+            background: #2980b9;
+        }
+
+        .assumptions {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-top: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .assumptions p {
+            margin: 10px 0;
+            color: #666;
+        }
+
+        /* PDF-specific styles */
+        .pdf-content {
+            font-family: 'Segoe UI', sans-serif;
+            padding: 20px;
+            background: #ffffff;
+        }
+
+        .pdf-header {
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .pdf-section {
+            margin: 20px 0;
+        }
+
+        .pdf-section h2 {
+            color: var(--primary);
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .pdf-section p {
+            margin: 5px 0;
+            color: #444;
+        }
+
+        .pdf-chart {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .pdf-disclaimer {
+            font-size: 12px;
+            color: #777;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .tooltip-text {
+                left: 0;
+                transform: none;
+                bottom: 150%;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="C:\Users\jmangold\OneDrive - Advisys\Logo Images\Logo.png" alt="Advisys Logo" class="logo">
+        <h1>Will my current savings grow enough for retirement?</h1>
+    </div>
+
+    <p class="intro-text">Plan your financial future with confidence. This calculator estimates how your savings and contributions could grow, helping you make smart decisions today for a comfortable retirement tomorrow.</p>
+    
+    <div class="container">
+        <div class="input-section">
+            <h2>Your Details</h2>
+            <div class="input-group">
+                <label for="current-savings">Current Savings ($):</label>
+                <div class="tooltip">
+                    <input type="number" id="current-savings" min="0" step="0.01" placeholder="e.g., 50000">
+                    <span class="tooltip-text">The amount you have saved currently for retirement</span>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="monthly-contributions">Monthly Contributions ($):</label>
+                <div class="tooltip">
+                    <input type="number" id="monthly-contributions" min="0" step="0.01" placeholder="e.g., 500">
+                    <span class="tooltip-text">The amount you save on a monthly basis for retirement</span>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="years">Years Until Retirement:</label>
+                <div class="tooltip">
+                    <input type="number" id="years" min="0" placeholder="e.g., 20">
+                    <span class="tooltip-text">In how many years would you like to retire?</span>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="monthly-spending">Monthly Spending Today ($):</label>
+                <div class="tooltip">
+                    <input type="number" id="monthly-spending" min="0" step="0.01" placeholder="e.g., 3000">
+                    <span class="tooltip-text">In today's dollars, the amount you would like to have on a monthly basis in retirement</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="graph-section">
+            <h2>Your Retirement Outlook</h2>
+            <canvas id="savingsChart"></canvas>
+            <div class="results-text">
+                <p id="resultMessage" class="result-message"></p>
+                <p>Consulting with a financial representativecan help fine-tune your retirement strategy.</p>
+		<br>
+                <p>Financial experts recommend saving 3-4x your annual income by age 45 and 5-6x by age 55 to maintain your lifestyle in retirement.</p>
+                
+                <div class="learn-more">
+                    <h3>Learn More:</h3>
+                    <div class="report-list">
+                        <p>"Stock Market Indexes and Averages"</p>
+                        <p>"Managing Your Debt"</p>
+                        <p>"Asset Allocation"</p>
+                    </div>
+                </div>
+
+                <div class="related-topics">
+                    <h3>Related Topics:</h3>
+                    <div class="report-list">
+                        <p>"How a 401(k) Works"</p>
+                        <p>"The Impact of Disability"</p>
+                        <p>"Basic Steps in the Estate Planning Process"</p>
+                    </div>
+                </div>
+
+                <p class="disclaimer">The suggested recommendations serve as general guidelines but may differ based on your unique financial circumstances.  Contact a financial representative for a more personalized assessment.</p>
+                <button class="download-button" onclick="downloadPDF()">Download Results</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="assumptions">
+        <h2>Assumptions</h2>
+        <p>Inflation: 3%</p>
+        <p>Retirement Length: 30 Years</p>
+        <p>Rate of Return: 6%</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script>
+        const currentSavingsInput = document.getElementById('current-savings');
+        const monthlyContributionsInput = document.getElementById('monthly-contributions');
+        const yearsInput = document.getElementById('years');
+        const monthlySpendingInput = document.getElementById('monthly-spending');
+        const resultMessage = document.getElementById('resultMessage');
+        const chartCanvas = document.getElementById('savingsChart');
+
+        const ctx = chartCanvas.getContext('2d');
+        const savingsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Savings at Retirement', 'Savings Needed'],
+                datasets: [{
+                    label: 'Amount ($)',
+                    data: [0, 0],
+                    backgroundColor: ['#2ecc71', '#e74c3c'],
+                    borderWidth: 0,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#e0e0e0' }
+                    },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        function updateChart() {
+            const currentSavings = parseFloat(currentSavingsInput.value) || 0;
+            const monthlyContributions = parseFloat(monthlyContributionsInput.value) || 0;
+            const years = parseFloat(yearsInput.value) || 0;
+            const monthlySpending = parseFloat(monthlySpendingInput.value) || 0;
+
+            const inflationRate = 0.03;
+            const retirementLength = 30;
+            const rateOfReturn = 0.06;
+
+            const futureValueSavings = currentSavings * Math.pow(1 + rateOfReturn, years);
+            const futureValueContributions = monthlyContributions * 12 * 
+                ((Math.pow(1 + rateOfReturn, years) - 1) / rateOfReturn);
+            const savingsAtRetirement = futureValueSavings + futureValueContributions;
+
+            const futureMonthlySpending = monthlySpending * Math.pow(1 + inflationRate, years);
+            const savingsNeeded = (futureMonthlySpending) / 
+                ((rateOfReturn / 12) - (inflationRate / 12)) * 
+                (1 - Math.pow((1 + (inflationRate / 12)) / (1 + (rateOfReturn / 12)), retirementLength * 12));
+
+            savingsChart.data.datasets[0].data = [savingsAtRetirement, savingsNeeded];
+            savingsChart.update();
+
+            resultMessage.textContent = savingsAtRetirement < savingsNeeded ?
+                "Based on your inputs, you might not be on track to meet retirement benchmarks." :
+                "Good news! You appear to be on track for a comfortable retirement.";
+
+            window.currentResults = {
+                currentSavings, monthlyContributions, years, monthlySpending,
+                savingsAtRetirement, savingsNeeded
+            };
+        }
+
+        function downloadPDF() {
+            const results = window.currentResults || {};
+
+            // Get chart as image
+            const chartImage = chartCanvas.toDataURL('image/png');
+
+            // Create PDF content
+            const element = document.createElement('div');
+            element.className = 'pdf-content';
+            element.innerHTML = `
+                <h1 class="pdf-header">Retirement Savings Analysis</h1>
+                <div class="pdf-section">
+                    <h2>Your Inputs</h2>
+                    <p><strong>Current Savings:</strong> $${results.currentSavings?.toLocaleString() || 0}</p>
+                    <p><strong>Monthly Contributions:</strong> $${results.monthlyContributions?.toLocaleString() || 0}</p>
+                    <p><strong>Years Until Retirement:</strong> ${results.years || 0}</p>
+                    <p><strong>Monthly Spending Today:</strong> $${results.monthlySpending?.toLocaleString() || 0}</p>
+                </div>
+                <div class="pdf-section">
+                    <h2>Your Results</h2>
+                    <p><strong>Savings at Retirement:</strong> $${results.savingsAtRetirement?.toLocaleString(undefined, {maximumFractionDigits: 2}) || 0}</p>
+                    <p><strong>Savings Needed:</strong> $${results.savingsNeeded?.toLocaleString(undefined, {maximumFractionDigits: 2}) || 0}</p>
+                    <p><strong>Status:</strong> ${resultMessage.textContent}</p>
+                </div>
+                <div class="pdf-section pdf-chart">
+                    <h2>Retirement Outlook</h2>
+                    <img src="${chartImage}" style="max-width: 100%; height: auto;" alt="Savings Chart">
+                </div>
+                <div class="pdf-section">
+                    <h2>Assumptions</h2>
+                    <p><strong>Inflation:</strong> 3%</p>
+                    <p><strong>Retirement Length:</strong> 30 Years</p>
+                    <p><strong>Rate of Return:</strong> 6%</p>
+                </div>
+                <p class="pdf-disclaimer">The suggested recommendations serve as general guidelines but may differ based on your unique financial circumstances. Contact a financial representative for a more personalized assessment.</p>
+            `;
+
+            const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5], // Top, Right, Bottom, Left in inches
+                filename: 'Retirement_Savings_Results.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        [currentSavingsInput, monthlyContributionsInput, yearsInput, monthlySpendingInput].forEach(input => {
+            input.addEventListener('input', updateChart);
+        });
+    </script>
+</body>
+</html>
