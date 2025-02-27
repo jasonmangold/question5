@@ -334,30 +334,21 @@
             <canvas id="savingsChart"></canvas>
             <div class="results-text">
                 <p id="resultMessage" class="result-message"></p>
-                <p>Consulting with a financial representativecan help fine-tune your retirement strategy.</p>
-		<br>
+                <p>Consulting with a financial representative can help fine-tune your retirement strategy.</p>
+                <br>
                 <p>Financial experts recommend saving 3-4x your annual income by age 45 and 5-6x by age 55 to maintain your lifestyle in retirement.</p>
                 
-<div class="learn-more">
-    <h3>Learn More:</h3>
-    <div class="report-list" id="learnMoreList"></div>
-</div>
-
-<div class="related-topics">
-    <h3>Related Topics:</h3>
-    <div class="report-list" id="relatedTopicsList"></div>
-</div>
+                <div class="learn-more">
+                    <h3>Learn More:</h3>
+                    <div class="report-list" id="learnMoreList"></div>
+                </div>
 
                 <div class="related-topics">
                     <h3>Related Topics:</h3>
-                    <div class="report-list">
-                        <p>"How a 401(k) Works"</p>
-                        <p>"The Impact of Disability"</p>
-                        <p>"Basic Steps in the Estate Planning Process"</p>
-                    </div>
+                    <div class="report-list" id="relatedTopicsList"></div>
                 </div>
 
-                <p class="disclaimer">The suggested recommendations serve as general guidelines but may differ based on your unique financial circumstances.  Contact a financial representative for a more personalized assessment.</p>
+                <p class="disclaimer">The suggested recommendations serve as general guidelines but may differ based on your unique financial circumstances. Contact a financial representative for a more personalized assessment.</p>
                 <button class="download-button" onclick="downloadPDF()">Download Results</button>
             </div>
         </div>
@@ -469,10 +460,133 @@
     }
 
     // Call functions when page loads
-    window.onload = function() {
+    window.addEventListener('load', function() {
         populateLearnMore();
         populateRelatedTopics();
-    };
-</script>
+    });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script>
+        const currentSavingsInput = document.getElementById('current-savings');
+        const monthlyContributionsInput = document.getElementById('monthly-contributions');
+        const yearsInput = document.getElementById('years');
+        const monthlySpendingInput = document.getElementById('monthly-spending');
+        const resultMessage = document.getElementById('resultMessage');
+        const chartCanvas = document.getElementById('savingsChart');
+
+        const ctx = chartCanvas.getContext('2d');
+        const savingsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Savings at Retirement', 'Savings Needed'],
+                datasets: [{
+                    label: 'Amount ($)',
+                    data: [0, 0],
+                    backgroundColor: ['#2ecc71', '#e74c3c'],
+                    borderWidth: 0,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#e0e0e0' }
+                    },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        function updateChart() {
+            const currentSavings = parseFloat(currentSavingsInput.value) || 0;
+            const monthlyContributions = parseFloat(monthlyContributionsInput.value) || 0;
+            const years = parseFloat(yearsInput.value) || 0;
+            const monthlySpending = parseFloat(monthlySpendingInput.value) || 0;
+
+            const inflationRate = 0.03;
+            const retirementLength = 30;
+            const rateOfReturn = 0.06;
+
+            const futureValueSavings = currentSavings * Math.pow(1 + rateOfReturn, years);
+            const futureValueContributions = monthlyContributions * 12 * 
+                ((Math.pow(1 + rateOfReturn, years) - 1) / rateOfReturn);
+            const savingsAtRetirement = futureValueSavings + futureValueContributions;
+
+            const futureMonthlySpending = monthlySpending * Math.pow(1 + inflationRate, years);
+            const savingsNeeded = (futureMonthlySpending) / 
+                ((rateOfReturn / 12) - (inflationRate / 12)) * 
+                (1 - Math.pow((1 + (inflationRate / 12)) / (1 + (rateOfReturn / 12)), retirementLength * 12));
+
+            savingsChart.data.datasets[0].data = [savingsAtRetirement, savingsNeeded];
+            savingsChart.update();
+
+            resultMessage.textContent = savingsAtRetirement < savingsNeeded ?
+                "Based on your inputs, you might not be on track to meet retirement benchmarks." :
+                "Good news! You appear to be on track for a comfortable retirement.";
+
+            window.currentResults = {
+                currentSavings, monthlyContributions, years, monthlySpending,
+                savingsAtRetirement, savingsNeeded
+            };
+        }
+
+        function downloadPDF() {
+            const results = window.currentResults || {};
+
+            // Get chart as image
+            const chartImage = chartCanvas.toDataURL('image/png');
+
+            // Create PDF content
+            const element = document.createElement('div');
+            element.className = 'pdf-content';
+            element.innerHTML = `
+                <h1 class="pdf-header">Retirement Savings Analysis</h1>
+                <div class="pdf-section">
+                    <h2>Your Inputs</h2>
+                    <p><strong>Current Savings:</strong> $${results.currentSavings?.toLocaleString() || 0}</p>
+                    <p><strong>Monthly Contributions:</strong> $${results.monthlyContributions?.toLocaleString() || 0}</p>
+                    <p><strong>Years Until Retirement:</strong> ${results.years || 0}</p>
+                    <p><strong>Monthly Spending Today:</strong> $${results.monthlySpending?.toLocaleString() || 0}</p>
+                </div>
+                <div class="pdf-section">
+                    <h2>Your Results</h2>
+                    <p><strong>Savings at Retirement:</strong> $${results.savingsAtRetirement?.toLocaleString(undefined, {maximumFractionDigits: 2}) || 0}</p>
+                    <p><strong>Savings Needed:</strong> $${results.savingsNeeded?.toLocaleString(undefined, {maximumFractionDigits: 2}) || 0}</p>
+                    <p><strong>Status:</strong> ${resultMessage.textContent}</p>
+                </div>
+                <div class="pdf-section pdf-chart">
+                    <h2>Retirement Outlook</h2>
+                    <img src="${chartImage}" style="max-width: 100%; height: auto;" alt="Savings Chart">
+                </div>
+                <div class="pdf-section">
+                    <h2>Assumptions</h2>
+                    <p><strong>Inflation:</strong> 3%</p>
+                    <p><strong>Retirement Length:</strong> 30 Years</p>
+                    <p><strong>Rate of Return:</strong> 6%</p>
+                </div>
+                <p class="pdf-disclaimer">The suggested recommendations serve as general guidelines but may differ based on your unique financial circumstances. Contact a financial representative for a more personalized assessment.</p>
+            `;
+
+            const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: 'Retirement_Savings_Results.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        [currentSavingsInput, monthlyContributionsInput, yearsInput, monthlySpendingInput].forEach(input => {
+            input.addEventListener('input', updateChart);
+        });
+    </script>
 </body>
 </html>
