@@ -338,14 +338,15 @@
 		<br>
                 <p>Financial experts recommend saving 3-4x your annual income by age 45 and 5-6x by age 55 to maintain your lifestyle in retirement.</p>
                 
-                <div class="learn-more">
-                    <h3>Learn More:</h3>
-                    <div class="report-list">
-                        <p>"Stock Market Indexes and Averages"</p>
-                        <p>"Managing Your Debt"</p>
-                        <p>"Asset Allocation"</p>
-                    </div>
-                </div>
+<div class="learn-more">
+    <h3>Learn More:</h3>
+    <div class="report-list" id="learnMoreList"></div>
+</div>
+
+<div class="related-topics">
+    <h3>Related Topics:</h3>
+    <div class="report-list" id="relatedTopicsList"></div>
+</div>
 
                 <div class="related-topics">
                     <h3>Related Topics:</h3>
@@ -369,127 +370,109 @@
         <p>Rate of Return: 6%</p>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <script>
-        const currentSavingsInput = document.getElementById('current-savings');
-        const monthlyContributionsInput = document.getElementById('monthly-contributions');
-        const yearsInput = document.getElementById('years');
-        const monthlySpendingInput = document.getElementById('monthly-spending');
-        const resultMessage = document.getElementById('resultMessage');
-        const chartCanvas = document.getElementById('savingsChart');
+    // Learn More Reports
+    const learnMoreReports = [
+        "Accumulation Goals",
+        "Purchasing Power of One Dollar",
+        "The Need for Financial Planning",
+        "Accumulating A Million Dollars",
+        "Cash Management Tools",
+        "Time and Growth of Money",
+        "Asset Allocation",
+        "Basic Investment Tools",
+        "Coping With Market Volatility",
+        "Key Investment Questions",
+        "Stock Market Indexes and Averages",
+        "The Perfect Investment",
+        "The Rule of 72 and the Rule of 115",
+        "Types of Investment Risk",
+        "Dollar Cost Averaging",
+        "Index Funds",
+        "The Need for Retirement Planning",
+        "How a Roth IRA Works",
+        "How a Traditional IRA Works",
+        "Tax-Deferred Growth in an IRA - Traditional IRA"
+    ];
 
-        const ctx = chartCanvas.getContext('2d');
-        const savingsChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Savings at Retirement', 'Savings Needed'],
-                datasets: [{
-                    label: 'Amount ($)',
-                    data: [0, 0],
-                    backgroundColor: ['#2ecc71', '#e74c3c'],
-                    borderWidth: 0,
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        grid: { color: '#e0e0e0' }
-                    },
-                    x: { grid: { display: false } }
-                },
-                plugins: {
-                    legend: { display: false }
-                }
-            }
+    // Related Topics Reports with Categories
+    const relatedTopics = {
+        "General": [
+            "Basic Steps in the Financial Planning Process",
+            "Choose the Financial Planning Team",
+            "Inflation (Graph)",
+            "The Need for Financial Planning",
+            "Buying a Home"
+        ],
+        "Debt": [
+            "Debt Repayment Strategies",
+            "Managing Your Debt",
+            "Pay Off the Mortgage or Invest?"
+        ],
+        "Disability": [
+            "How Employer Provided Disability Insurance Works",
+            "How Individual Disability Income Insurance Works",
+            "Odds of Disability",
+            "The Impact of Disability",
+            "The Individual Need for Disability Insurance"
+        ],
+        "Investments": [
+            "Pyramid of Investments"
+        ],
+        "Life Insurance": [
+            "General Purposes of Life Insurance",
+            "The Need for Responsible Planning",
+            "Types of Life Insurance Policies",
+            "Using Cash Value Life Insurance"
+        ],
+        "Estate Planning": [
+            "Advantages of a Will",
+            "Avoiding Probate",
+            "The Importance of Beneficiary Designations",
+            "The Need for Estate Planning"
+        ]
+    };
+
+    // Function to shuffle array
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Function to populate Learn More reports
+    function populateLearnMore() {
+        const shuffledReports = shuffleArray([...learnMoreReports]);
+        const selectedReports = shuffledReports.slice(0, 3);
+        const learnMoreList = document.getElementById('learnMoreList');
+        learnMoreList.innerHTML = selectedReports
+            .map(report => `<p>"${report}"</p>`)
+            .join('');
+    }
+
+    // Function to populate Related Topics reports
+    function populateRelatedTopics() {
+        const categories = Object.keys(relatedTopics);
+        const shuffledCategories = shuffleArray([...categories]).slice(0, 3);
+        const relatedTopicsList = document.getElementById('relatedTopicsList');
+        
+        const selectedReports = shuffledCategories.map(category => {
+            const reports = relatedTopics[category];
+            return reports[Math.floor(Math.random() * reports.length)];
         });
 
-        function updateChart() {
-            const currentSavings = parseFloat(currentSavingsInput.value) || 0;
-            const monthlyContributions = parseFloat(monthlyContributionsInput.value) || 0;
-            const years = parseFloat(yearsInput.value) || 0;
-            const monthlySpending = parseFloat(monthlySpendingInput.value) || 0;
+        relatedTopicsList.innerHTML = selectedReports
+            .map(report => `<p>"${report}"</p>`)
+            .join('');
+    }
 
-            const inflationRate = 0.03;
-            const retirementLength = 30;
-            const rateOfReturn = 0.06;
-
-            const futureValueSavings = currentSavings * Math.pow(1 + rateOfReturn, years);
-            const futureValueContributions = monthlyContributions * 12 * 
-                ((Math.pow(1 + rateOfReturn, years) - 1) / rateOfReturn);
-            const savingsAtRetirement = futureValueSavings + futureValueContributions;
-
-            const futureMonthlySpending = monthlySpending * Math.pow(1 + inflationRate, years);
-            const savingsNeeded = (futureMonthlySpending) / 
-                ((rateOfReturn / 12) - (inflationRate / 12)) * 
-                (1 - Math.pow((1 + (inflationRate / 12)) / (1 + (rateOfReturn / 12)), retirementLength * 12));
-
-            savingsChart.data.datasets[0].data = [savingsAtRetirement, savingsNeeded];
-            savingsChart.update();
-
-            resultMessage.textContent = savingsAtRetirement < savingsNeeded ?
-                "Based on your inputs, you might not be on track to meet retirement benchmarks." :
-                "Good news! You appear to be on track for a comfortable retirement.";
-
-            window.currentResults = {
-                currentSavings, monthlyContributions, years, monthlySpending,
-                savingsAtRetirement, savingsNeeded
-            };
-        }
-
-        function downloadPDF() {
-            const results = window.currentResults || {};
-
-            // Get chart as image
-            const chartImage = chartCanvas.toDataURL('image/png');
-
-            // Create PDF content
-            const element = document.createElement('div');
-            element.className = 'pdf-content';
-            element.innerHTML = `
-                <h1 class="pdf-header">Retirement Savings Analysis</h1>
-                <div class="pdf-section">
-                    <h2>Your Inputs</h2>
-                    <p><strong>Current Savings:</strong> $${results.currentSavings?.toLocaleString() || 0}</p>
-                    <p><strong>Monthly Contributions:</strong> $${results.monthlyContributions?.toLocaleString() || 0}</p>
-                    <p><strong>Years Until Retirement:</strong> ${results.years || 0}</p>
-                    <p><strong>Monthly Spending Today:</strong> $${results.monthlySpending?.toLocaleString() || 0}</p>
-                </div>
-                <div class="pdf-section">
-                    <h2>Your Results</h2>
-                    <p><strong>Savings at Retirement:</strong> $${results.savingsAtRetirement?.toLocaleString(undefined, {maximumFractionDigits: 2}) || 0}</p>
-                    <p><strong>Savings Needed:</strong> $${results.savingsNeeded?.toLocaleString(undefined, {maximumFractionDigits: 2}) || 0}</p>
-                    <p><strong>Status:</strong> ${resultMessage.textContent}</p>
-                </div>
-                <div class="pdf-section pdf-chart">
-                    <h2>Retirement Outlook</h2>
-                    <img src="${chartImage}" style="max-width: 100%; height: auto;" alt="Savings Chart">
-                </div>
-                <div class="pdf-section">
-                    <h2>Assumptions</h2>
-                    <p><strong>Inflation:</strong> 3%</p>
-                    <p><strong>Retirement Length:</strong> 30 Years</p>
-                    <p><strong>Rate of Return:</strong> 6%</p>
-                </div>
-                <p class="pdf-disclaimer">The suggested recommendations serve as general guidelines but may differ based on your unique financial circumstances. Contact a financial representative for a more personalized assessment.</p>
-            `;
-
-            const opt = {
-                margin: [0.5, 0.5, 0.5, 0.5], // Top, Right, Bottom, Left in inches
-                filename: 'Retirement_Savings_Results.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save();
-        }
-
-        [currentSavingsInput, monthlyContributionsInput, yearsInput, monthlySpendingInput].forEach(input => {
-            input.addEventListener('input', updateChart);
-        });
-    </script>
+    // Call functions when page loads
+    window.onload = function() {
+        populateLearnMore();
+        populateRelatedTopics();
+    };
+</script>
 </body>
 </html>
